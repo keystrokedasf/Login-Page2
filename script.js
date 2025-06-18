@@ -10,7 +10,7 @@ function showNotification(message, type) {
   setTimeout(() => notification.classList.remove('show'), 3000);
 }
 
-// Handle signup
+// Signup handler
 signupForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
@@ -23,11 +23,11 @@ signupForm.addEventListener('submit', (e) => {
     return;
   }
 
-  // Load existing users or empty array
+  // Load users array or create new
   const usersJSON = localStorage.getItem('users');
   const users = usersJSON ? JSON.parse(usersJSON) : [];
 
-  // Check if username or email already exists (case insensitive)
+  // Check duplicates case-insensitive
   const usernameExists = users.some(user => user.username.toLowerCase() === username.toLowerCase());
   const emailExists = users.some(user => user.email.toLowerCase() === email.toLowerCase());
 
@@ -41,7 +41,7 @@ signupForm.addEventListener('submit', (e) => {
     return;
   }
 
-  // Add new user and save
+  // Save new user
   users.push({ username, email, password });
   localStorage.setItem('users', JSON.stringify(users));
 
@@ -52,7 +52,7 @@ signupForm.addEventListener('submit', (e) => {
   document.getElementById('toggle').checked = false;
 });
 
-// Handle login
+// Login handler
 loginForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
@@ -66,13 +66,12 @@ loginForm.addEventListener('submit', (e) => {
   }
 
   const users = JSON.parse(usersJSON);
-
   const matchedUser = users.find(user => user.username === username && user.password === password);
 
   if (matchedUser) {
     showNotification('Login successful! Redirecting...', 'success');
     setTimeout(() => {
-      window.location.href = 'dashboard.html'; // Change to your actual dashboard page
+      window.location.href = 'dashboard.html'; // Your actual page
     }, 2000);
   } else {
     showNotification('Invalid username or password.', 'error');
