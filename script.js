@@ -1,82 +1,70 @@
-// Notification setup
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
 const notification = document.getElementById('notification');
+
+// Load users from localStorage
+function loadUsers() {
+  return JSON.parse(localStorage.getItem('users')) || [];
+}
+
+// Save users to localStorage
+function saveUsers(users) {
+  localStorage.setItem('users', JSON.stringify(users));
+}
+
+// Show animated notification
 function showNotification(message, type = 'success') {
-  if (!notification) return;
   notification.textContent = message;
-  notification.className = '';
-  notification.classList.add(type, 'show');
+  notification.className = `show ${type}`;
   setTimeout(() => {
-    notification.classList.remove('show');
+    notification.className = '';
   }, 3000);
 }
 
-// --------- SIGNUP ---------
-const signupForm = document.getElementById('signup-form');
-if (signupForm) {
-  signupForm.addEventListener('submit', e => {
-    e.preventDefault();
+// Signup form handler
+signupForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const username = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
 
-    const username = document.getElementById('signup-username').value.trim();
-    const email = document.getElementById('signup-email').value.trim().toLowerCase();
-    const password = document.getElementById('signup-password').value.trim();
+  let users = loadUsers();
 
-    if (!username || !email || !password) {
-      showNotification('Please fill in all fields.', 'error');
-      return;
-    }
+  if (users.some(u => u.username === username)) {
+    showNotification('Username already taken!', 'error');
+    return;
+  }
 
-    let users = JSON.parse(localStorage.getItem('users')) || [];
+  if (users.some(u => u.email === email)) {
+    showNotification('Email already registered!', 'error');
+    return;
+  }
 
-    // Check for duplicates
-    const usernameTaken = users.some(u => u.username.toLowerCase() === username.toLowerCase());
-    const emailTaken = users.some(u => u.email === email);
+  users.push({ username, email, password });
+  saveUsers(users);
+  showNotification('Signup successful!', 'success');
 
-    if (usernameTaken) {
-      showNotification('Username already taken.', 'error');
-      return;
-    }
-    if (emailTaken) {
-      showNotification('Email already registered.', 'error');
-      return;
-    }
+  signupForm.reset();
+});
 
-    users.push({ username, email, password });
-    localStorage.setItem('users', JSON.stringify(users));
+// Login form handler
+loginForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
 
-    showNotification('Signup successful! You can now log in.', 'success');
-    signupForm.reset();
-  });
-}
+  const users = loadUsers();
+  const user = users.find(u => u.username === username && u.password === password);
 
-// --------- LOGIN ---------
-const loginForm = document.getElementById('login-form');
-if (loginForm) {
-  loginForm.addEventListener('submit', e => {
-    e.preventDefault();
+  if (!user) {
+    showNotification('Invalid username or password!', 'error');
+    return;
+  }
 
-    const usernameInput = document.getElementById('login-username').value.trim();
-    const passwordInput = document.getElementById('login-password').value.trim();
+  localStorage.setItem('currentUser', username);
+  showNotification('Login successful!', 'success');
 
-    if (!usernameInput || !passwordInput) {
-      showNotification('Please enter both fields.', 'error');
-      return;
-    }
-
-    const users = JSON.parse(localStorage.getItem('users')) || [];
-
-    // Case-insensitive username match
-    const matchedUser = users.find(
-      u => u.username.toLowerCase() === usernameInput.toLowerCase() && u.password === passwordInput
-    );
-
-    if (matchedUser) {
-      localStorage.setItem('currentUser', matchedUser.username); // ✅ Correctly store full username
-      showNotification('Login successful! Redirecting...', 'success');
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1500);
-    } else {
-      showNotification('Invalid username or password.', 'error');
-    }
-  });
-}
+  setTimeout(() => {
+    window.location.href = 'dashboard.html';
+  }, 1000);
+});
