@@ -114,3 +114,90 @@ button:hover {
   color: #ffb88c;
   font-weight: 600;
   cursor: p
+
+.dashboard header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.dashboard header h1 {
+  font-weight: 700;
+  font-size: 28px;
+}
+#logout-btn {
+  background: transparent;
+  border: 2px solid #ff5e62;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+#logout-btn:hover {
+  background: #ff5e62;
+  color: white;
+}
+
+.post-form-section textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: transparent;
+  color: white;
+  resize: vertical;
+  margin-bottom: 12px;
+  transition: border-color 0.3s ease;
+}
+.post-form-section textarea:focus {
+  outline: none;
+  border-color: #ff5e62;
+  background: rgba(255,255,255,0.1);
+}
+.post-form-section button {
+  width: 100%;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 18px;
+  border-radius: 10px;
+  border: 2px solid #ff5e62;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.post-form-section button:hover {
+  background: #ff5e62;
+  color: white;
+}
+
+.posts-section {
+  margin-top: 30px;
+}
+.posts-section h2 {
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+.post {
+  background: rgba(0,0,0,0.5);
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #ffb88c;
+}
+.post-content {
+  font-size: 16px;
+  color: white;
+  white-space: pre-wrap;
+}
