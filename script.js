@@ -23,14 +23,32 @@ signupForm.addEventListener('submit', (e) => {
     return;
   }
 
-  // Save to localStorage as JSON string
-  const userData = { username, email, password };
-  localStorage.setItem('user', JSON.stringify(userData));
+  // Load existing users or empty array
+  const usersJSON = localStorage.getItem('users');
+  const users = usersJSON ? JSON.parse(usersJSON) : [];
+
+  // Check if username or email already exists (case insensitive)
+  const usernameExists = users.some(user => user.username.toLowerCase() === username.toLowerCase());
+  const emailExists = users.some(user => user.email.toLowerCase() === email.toLowerCase());
+
+  if (usernameExists) {
+    showNotification('Username already taken.', 'error');
+    return;
+  }
+
+  if (emailExists) {
+    showNotification('Email already registered.', 'error');
+    return;
+  }
+
+  // Add new user and save
+  users.push({ username, email, password });
+  localStorage.setItem('users', JSON.stringify(users));
 
   showNotification('Signup successful! You can now log in.', 'success');
   signupForm.reset();
 
-  // Automatically switch to login form
+  // Switch to login form
   document.getElementById('toggle').checked = false;
 });
 
@@ -41,21 +59,21 @@ loginForm.addEventListener('submit', (e) => {
   const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value.trim();
 
-  const storedUserJSON = localStorage.getItem('user');
-  if (!storedUserJSON) {
-    showNotification('No user found. Please sign up first.', 'error');
+  const usersJSON = localStorage.getItem('users');
+  if (!usersJSON) {
+    showNotification('No users found. Please sign up first.', 'error');
     return;
   }
 
-  const storedUser = JSON.parse(storedUserJSON);
+  const users = JSON.parse(usersJSON);
 
-  if (username === storedUser.username && password === storedUser.password) {
+  const matchedUser = users.find(user => user.username === username && user.password === password);
+
+  if (matchedUser) {
     showNotification('Login successful! Redirecting...', 'success');
-
     setTimeout(() => {
-      window.location.href = 'dashboard.html'; // Your dashboard page
+      window.location.href = 'dashboard.html'; // Change to your actual dashboard page
     }, 2000);
-
   } else {
     showNotification('Invalid username or password.', 'error');
   }
