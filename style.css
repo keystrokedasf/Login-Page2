@@ -1,60 +1,71 @@
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Background */
 body, html {
   height: 100%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.5) 50%), url('Background.jpg');
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.5) 50%), url('Background.jpg');
   background-position: center;
   background-size: cover;
   color: white;
-}
-
-.main {
-  min-height: 100vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  text-align: center;
-  backdrop-filter: brightness(0.6);
+  padding: 40px 20px;
 }
 
+/* Main Container */
+.main {
+  width: 100%;
+  max-width: 1000px;
+  text-align: center;
+}
+
+/* Logo Title */
 .logo {
   font-size: 3rem;
   margin-bottom: 40px;
   letter-spacing: 2px;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.6);
 }
 
+/* Forms container */
 .forms-container {
   display: flex;
-  gap: 40px;
   flex-wrap: wrap;
+  gap: 40px;
   justify-content: center;
-  width: 100%;
-  max-width: 900px;
 }
 
+/* Individual form styling */
 .form {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 30px 40px;
-  border-radius: 12px;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-  flex: 1 1 300px;
-  min-width: 280px;
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 30px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  transition: transform 0.3s;
 }
 
+.form:hover {
+  transform: translateY(-5px);
+}
+
+/* Form Headings */
 .form h3 {
   margin-bottom: 20px;
-  font-weight: 600;
   font-size: 1.8rem;
-  color: #f0f0f0;
+  color: #fff;
 }
 
+/* Input fields */
 .form input {
   width: 100%;
   padding: 12px 15px;
@@ -62,30 +73,33 @@ body, html {
   border: none;
   border-radius: 8px;
   font-size: 1rem;
+  outline: none;
 }
 
+/* Placeholder color */
 .form input::placeholder {
-  color: #aaa;
+  color: #bbb;
 }
 
+/* Button */
 .btn {
   width: 100%;
-  padding: 14px 0;
-  background: transparent;
-  border: 2px solid #f0f0f0;
-  color: #f0f0f0;
+  padding: 14px;
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  border: none;
+  color: white;
   font-size: 1.2rem;
-  border-radius: 10px;
+  font-weight: bold;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
+  transition: background 0.3s;
 }
 
 .btn:hover {
-  background: #f0f0f0;
-  color: #222;
+  background: linear-gradient(135deg, #0072ff, #00c6ff);
 }
 
+/* Notification */
 #notification {
   position: fixed;
   bottom: 20px;
@@ -98,10 +112,10 @@ body, html {
   pointer-events: none;
   transform: translateX(100%);
   transition: all 0.4s ease;
-  max-width: 300px;
   font-weight: 600;
   box-shadow: 0 0 15px rgba(0,0,0,0.5);
   z-index: 1000;
+  max-width: 300px;
 }
 
 #notification.show {
@@ -116,4 +130,12 @@ body, html {
 
 #notification.error {
   background-color: #dc3545;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .forms-container {
+    flex-direction: column;
+    gap: 20px;
+  }
 }
