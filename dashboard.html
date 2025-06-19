@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -15,15 +15,18 @@
       </div>
 
       <form id="post-form" class="post-form">
-        <textarea id="post-content" placeholder="Share something..." required></textarea>
+        <textarea id="post-content" placeholder="Share something..." rows="3"></textarea>
         <button type="submit" class="btn">Post</button>
       </form>
 
-      <div id="posts-container" class="posts-container"></div>
+      <div id="posts-scroll-wrapper">
+        <div id="posts-container" class="posts-container"></div>
+      </div>
     </div>
   </div>
 
   <div id="notification"></div>
+
   <script src="dashboard.js"></script>
 </body>
 </html>
