@@ -1,9 +1,8 @@
-// Import needed Firebase functions
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { getDatabase, ref, set, get, query, orderByChild, equalTo } from "firebase/database";
 
-// Your Firebase config (replace with yours)
+// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBUP9j33SLHMnj-EOSxNUK7uClOBrz38cQ",
   authDomain: "login-page2-e097f.firebaseapp.com",
@@ -25,19 +24,21 @@ const loginForm = document.getElementById('login-form');
 
 registerForm.addEventListener('submit', async e => {
   e.preventDefault();
+
   const email = registerForm['reg-email'].value.trim();
   const password = registerForm['reg-password'].value.trim();
   const username = registerForm['reg-username'].value.trim();
 
   try {
-    // Check username uniqueness
+    // Check if username exists
     let usernameQuery = query(ref(database, 'users'), orderByChild('username'), equalTo(username));
     let usernameSnap = await get(usernameQuery);
     if (usernameSnap.exists()) {
       alert('Username already taken!');
       return;
     }
-    // Check email uniqueness
+
+    // Check if email exists
     let emailQuery = query(ref(database, 'users'), orderByChild('email'), equalTo(email));
     let emailSnap = await get(emailQuery);
     if (emailSnap.exists()) {
@@ -45,10 +46,10 @@ registerForm.addEventListener('submit', async e => {
       return;
     }
 
-    // Create user with Firebase Auth
+    // Create user
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-    // Save username and email in Realtime Database
+    // Save user data
     await set(ref(database, 'users/' + userCredential.user.uid), {
       username,
       email
@@ -56,6 +57,7 @@ registerForm.addEventListener('submit', async e => {
 
     alert('Account created successfully! Please log in.');
     registerForm.reset();
+
   } catch (err) {
     alert(err.message);
   }
@@ -63,18 +65,22 @@ registerForm.addEventListener('submit', async e => {
 
 loginForm.addEventListener('submit', async e => {
   e.preventDefault();
+
   const email = loginForm['login-email'].value.trim();
   const password = loginForm['login-password'].value.trim();
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
-    // Fetch username
+    // Get username from DB
     const userSnap = await get(ref(database, 'users/' + userCredential.user.uid));
     if (!userSnap.exists()) throw new Error('User data not found.');
 
     localStorage.setItem('currentUser', userSnap.val().username);
+
+    // Redirect after successful login
     window.location.href = 'dashboard.html';
+
   } catch {
     alert('Invalid email or password.');
   }
