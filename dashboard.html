@@ -8,25 +8,25 @@
 </head>
 <body>
   <div class="main">
-    <div class="dashboard-wrapper">
-      <div class="dashboard-header">
-        <h2>Welcome, <span id="username-display"></span>!</h2>
-        <button id="logout-btn">Logout</button>
+    <div class="navbar">
+      <div class="icon">
+        <h2 class="logo">Dashboard</h2>
       </div>
-
-      <form id="post-form" class="post-form">
-        <textarea id="post-content" placeholder="Share something..." rows="3"></textarea>
-        <button type="submit" class="btn">Post</button>
-      </form>
-
-      <div id="posts-scroll-wrapper">
-        <div id="posts-container" class="posts-container"></div>
-      </div>
+      <button id="logout-btn" class="logout-btn">Logout</button>
     </div>
+
+    <div class="welcome-msg">
+      Welcome, <span id="username-display"></span>!
+    </div>
+
+    <form id="post-form">
+      <textarea id="post-content" placeholder="Share something..." required></textarea>
+      <button type="submit">Post</button>
+    </form>
+
+    <div id="posts-container" class="posts-container"></div>
   </div>
 
-  <div id="notification"></div>
-
-  <script src="dashboard.js"></script>
+  <script type="module" src="dashboard.js"></script>
 </body>
 </html>
