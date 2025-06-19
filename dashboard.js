@@ -1,8 +1,16 @@
-// Redirect to login if no user logged in
-const currentUser = localStorage.getItem('currentUser');
-if (!currentUser) {
-  window.location.href = 'index.html';
-}
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "login-page2-e097f.firebaseapp.com",
+  databaseURL: "https://login-page2-e097f-default-rtdb.firebaseio.com",
+  projectId: "login-page2-e097f",
+  storageBucket: "login-page2-e097f.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const database = firebase.database();
 
 const usernameDisplay = document.getElementById('username-display');
 const logoutBtn = document.getElementById('logout-btn');
@@ -10,89 +18,75 @@ const postForm = document.getElementById('post-form');
 const postContent = document.getElementById('post-content');
 const postsContainer = document.getElementById('posts-container');
 
-usernameDisplay.textContent = currentUser;
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = 'index.html'; // Redirect if not logged in
+  } else {
+    // Show username on dashboard
+    database.ref('users/' + user.uid).once('value').then(snapshot => {
+      usernameDisplay.textContent = snapshot.val().username;
+      localStorage.setItem('currentUser', snapshot.val().username);
+    });
 
-// Logout handler
-logoutBtn.addEventListener('click', () => {
-  localStorage.removeItem('currentUser');
-  window.location.href = 'index.html';
+    // Load posts and listen for updates in real-time
+    const postsRef = database.ref('posts');
+    postsRef.on('value', snapshot => {
+      const posts = snapshot.val();
+      if (!posts) {
+        postsContainer.innerHTML = '<p>No posts yet. Be the first to post!</p>';
+        return;
+      }
+
+      const postsArray = Object.values(posts).sort((a, b) => b.timestamp - a.timestamp);
+      postsContainer.innerHTML = postsArray.map(post => {
+        const date = new Date(post.timestamp);
+        return `
+          <div class="post">
+            <div class="post-header">
+              <strong>${escapeHTML(post.username)}</strong>
+              <span class="post-date">${date.toLocaleString()}</span>
+            </div>
+            <p class="post-content">${escapeHTML(post.content)}</p>
+          </div>
+        `;
+      }).join('');
+    });
+  }
 });
 
-// Load posts from storage or empty array
-function loadPosts() {
-  const postsJSON = localStorage.getItem('posts');
-  return postsJSON ? JSON.parse(postsJSON) : [];
-}
+postForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const content = postContent.value.trim();
+  if (!content) return;
 
-// Save posts array to storage
-function savePosts(posts) {
-  localStorage.setItem('posts', JSON.stringify(posts));
-}
-
-// Render posts on page
-function renderPosts() {
-  const posts = loadPosts();
-
-  if (posts.length === 0) {
-    postsContainer.innerHTML = '<p>No posts yet. Be the first to post!</p>';
+  const username = localStorage.getItem('currentUser');
+  if (!username) {
+    alert('User not found, please log in again.');
+    window.location.href = 'index.html';
     return;
   }
 
-  postsContainer.innerHTML = posts
-    .map(post => {
-      const date = new Date(post.timestamp);
-      return `
-        <div class="post">
-          <div class="post-header">
-            <strong>${escapeHTML(post.username)}</strong> 
-            <span class="post-date">${date.toLocaleString()}</span>
-          </div>
-          <p class="post-content">${escapeHTML(post.content)}</p>
-        </div>
-      `;
-    })
-    .join('');
+  const postsRef = database.ref('posts');
+  postsRef.push({
+    username,
+    content,
+    timestamp: Date.now()
+  });
 
-  // Auto scroll to top
-  const wrapper = document.getElementById('posts-scroll-wrapper');
-  if (wrapper) wrapper.scrollTop = 0;
-}
+  postContent.value = '';
+});
 
-// Escape to prevent XSS
+// Logout
+logoutBtn.addEventListener('click', () => {
+  auth.signOut().then(() => {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'index.html';
+  });
+});
+
+// Simple escape to avoid XSS
 function escapeHTML(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
-
-// Handle new post submission
-postForm.addEventListener('submit', e => {
-  e.preventDefault();
-
-  const content = postContent.value.trim();
-  if (!content) return;
-
-  const posts = loadPosts();
-
-  const newPost = {
-    username: currentUser,
-    content,
-    timestamp: new Date().toISOString(),
-  };
-
-  posts.unshift(newPost); // Newest on top
-  savePosts(posts);
-
-  postContent.value = '';
-  renderPosts();
-});
-
-// Initial render
-renderPosts();
-
-// Listen for post updates in real-time across tabs
-window.addEventListener('storage', (event) => {
-  if (event.key === 'posts') {
-    renderPosts();
-  }
-});
