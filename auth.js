@@ -1,76 +1,73 @@
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "login-page2-e097f.firebaseapp.com",
+  databaseURL: "https://login-page2-e097f-default-rtdb.firebaseio.com",
+  projectId: "login-page2-e097f",
+  storageBucket: "login-page2-e097f.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const database = firebase.database();
+
+const registerForm = document.getElementById('register-form');
 const loginForm = document.getElementById('login-form');
-const signupForm = document.getElementById('signup-form');
-const notification = document.getElementById('notification');
 
-function showNotification(message, type = 'success') {
-  notification.textContent = message;
-  notification.className = `show ${type}`;
-  setTimeout(() => {
-    notification.className = '';
-  }, 3000);
-}
-
-function getUsers() {
-  const usersJSON = localStorage.getItem('users');
-  return usersJSON ? JSON.parse(usersJSON) : [];
-}
-
-function saveUsers(users) {
-  localStorage.setItem('users', JSON.stringify(users));
-}
-
-// Signup
-signupForm.addEventListener('submit', e => {
+registerForm.addEventListener('submit', e => {
   e.preventDefault();
+  const email = registerForm['reg-email'].value.trim();
+  const password = registerForm['reg-password'].value.trim();
+  const username = registerForm['reg-username'].value.trim();
 
-  const username = document.getElementById('signup-username').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const password = document.getElementById('signup-password').value.trim();
+  // Check username uniqueness
+  database.ref('users').orderByChild('username').equalTo(username).once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      alert('Username already taken!');
+      return Promise.reject('Username taken');
+    }
+    // Check email uniqueness
+    return database.ref('users').orderByChild('email').equalTo(email).once('value');
+  }).then(snapshot => {
+    if (snapshot.exists()) {
+      alert('Email already registered!');
+      return Promise.reject('Email registered');
+    }
 
-  if (!username || !email || !password) {
-    showNotification('Please fill in all fields', 'error');
-    return;
-  }
-
-  const users = getUsers();
-
-  if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) {
-    showNotification('Username already taken', 'error');
-    return;
-  }
-
-  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-    showNotification('Email already registered', 'error');
-    return;
-  }
-
-  users.push({ username, email, password });
-  saveUsers(users);
-
-  showNotification('Account created successfully!', 'success');
-  signupForm.reset();
+    // Create user with Firebase Auth
+    return auth.createUserWithEmailAndPassword(email, password);
+  }).then(cred => {
+    // Save username/email under user uid
+    return database.ref('users/' + cred.user.uid).set({
+      username,
+      email
+    });
+  }).then(() => {
+    alert('Account created successfully! Please log in.');
+    registerForm.reset();
+  }).catch(err => {
+    if (typeof err === 'string') return; // already alerted
+    alert(err.message);
+  });
 });
 
-// Login
 loginForm.addEventListener('submit', e => {
   e.preventDefault();
+  const email = loginForm['login-email'].value.trim();
+  const password = loginForm['login-password'].value.trim();
 
-  const username = document.getElementById('login-username').value.trim();
-  const password = document.getElementById('login-password').value.trim();
-
-  const users = getUsers();
-
-  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
-
-  if (!user) {
-    showNotification('Invalid username or password', 'error');
-    return;
-  }
-
-  localStorage.setItem('currentUser', user.username);
-  showNotification('Login successful!', 'success');
-
-  setTimeout(() => {
-    window.location.href = 'dashboard.html';
-  }, 1000);
+  auth.signInWithEmailAndPassword(email, password)
+    .then(cred => {
+      return database.ref('users/' + cred.user.uid).once('value');
+    })
+    .then(snapshot => {
+      const userData = snapshot.val();
+      localStorage.setItem('currentUser', userData.username);
+      window.location.href = 'dashboard.html';
+    })
+    .catch(err => {
+      alert('Invalid email or password.');
+    });
 });
