@@ -1,73 +1,81 @@
-// Initialize Firebase
+// Import needed Firebase functions
+import { initializeApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { getDatabase, ref, set, get, query, orderByChild, equalTo } from "firebase/database";
+
+// Your Firebase config (replace with yours)
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyBUP9j33SLHMnj-EOSxNUK7uClOBrz38cQ",
   authDomain: "login-page2-e097f.firebaseapp.com",
   databaseURL: "https://login-page2-e097f-default-rtdb.firebaseio.com",
   projectId: "login-page2-e097f",
-  storageBucket: "login-page2-e097f.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  storageBucket: "login-page2-e097f.firebasestorage.app",
+  messagingSenderId: "1057472162795",
+  appId: "1:1057472162795:web:25ba5f6d4c097fca0fc7ae",
+  measurementId: "G-YLP94XDJVD"
 };
-firebase.initializeApp(firebaseConfig);
 
-const auth = firebase.auth();
-const database = firebase.database();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
 
 const registerForm = document.getElementById('register-form');
 const loginForm = document.getElementById('login-form');
 
-registerForm.addEventListener('submit', e => {
+registerForm.addEventListener('submit', async e => {
   e.preventDefault();
   const email = registerForm['reg-email'].value.trim();
   const password = registerForm['reg-password'].value.trim();
   const username = registerForm['reg-username'].value.trim();
 
-  // Check username uniqueness
-  database.ref('users').orderByChild('username').equalTo(username).once('value').then(snapshot => {
-    if (snapshot.exists()) {
+  try {
+    // Check username uniqueness
+    let usernameQuery = query(ref(database, 'users'), orderByChild('username'), equalTo(username));
+    let usernameSnap = await get(usernameQuery);
+    if (usernameSnap.exists()) {
       alert('Username already taken!');
-      return Promise.reject('Username taken');
+      return;
     }
     // Check email uniqueness
-    return database.ref('users').orderByChild('email').equalTo(email).once('value');
-  }).then(snapshot => {
-    if (snapshot.exists()) {
+    let emailQuery = query(ref(database, 'users'), orderByChild('email'), equalTo(email));
+    let emailSnap = await get(emailQuery);
+    if (emailSnap.exists()) {
       alert('Email already registered!');
-      return Promise.reject('Email registered');
+      return;
     }
 
     // Create user with Firebase Auth
-    return auth.createUserWithEmailAndPassword(email, password);
-  }).then(cred => {
-    // Save username/email under user uid
-    return database.ref('users/' + cred.user.uid).set({
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+    // Save username and email in Realtime Database
+    await set(ref(database, 'users/' + userCredential.user.uid), {
       username,
       email
     });
-  }).then(() => {
+
     alert('Account created successfully! Please log in.');
     registerForm.reset();
-  }).catch(err => {
-    if (typeof err === 'string') return; // already alerted
+  } catch (err) {
     alert(err.message);
-  });
+  }
 });
 
-loginForm.addEventListener('submit', e => {
+loginForm.addEventListener('submit', async e => {
   e.preventDefault();
   const email = loginForm['login-email'].value.trim();
   const password = loginForm['login-password'].value.trim();
 
-  auth.signInWithEmailAndPassword(email, password)
-    .then(cred => {
-      return database.ref('users/' + cred.user.uid).once('value');
-    })
-    .then(snapshot => {
-      const userData = snapshot.val();
-      localStorage.setItem('currentUser', userData.username);
-      window.location.href = 'dashboard.html';
-    })
-    .catch(err => {
-      alert('Invalid email or password.');
-    });
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+    // Fetch username
+    const userSnap = await get(ref(database, 'users/' + userCredential.user.uid));
+    if (!userSnap.exists()) throw new Error('User data not found.');
+
+    localStorage.setItem('currentUser', userSnap.val().username);
+    window.location.href = 'dashboard.html';
+  } catch {
+    alert('Invalid email or password.');
+  }
 });
